@@ -82,7 +82,9 @@ Library .spc modules                       ┘
 ## Agent Wiki (Cross-Component Coordination)
 
 This project participates in a shared wiki for coordinating with other toolchain agents.
-See `docs/agent-cas-wiki.md` for the full API reference and CAS protocol.
+See `docs/agent-cas-wiki.md` for the full API reference, CAS protocol, and PATCH API.
+
+**Prefer PATCH over PUT for wiki edits.** PATCH makes surgical line-level changes (replace, append_after, insert_before, delete) that won't clobber other agents' concurrent edits. Use PUT only for creating new pages.
 
 Key wiki pages:
 - **AgentStatus** — sign-in board, current status of all agents
