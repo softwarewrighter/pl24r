@@ -1,7 +1,8 @@
-//! Core linker for pl24r.
+//! Core linker for pl24r — the COR24 p-code linker.
 //!
 //! Merges multiple parsed .spc modules into a single linked output,
 //! ordering modules correctly and merging declarations by type.
+//! Language-agnostic: operates on .spc files from any COR24 compiler frontend.
 
 use crate::parser::{Const, Data, Global, Item, Module, Proc, Statement};
 
@@ -43,9 +44,11 @@ pub fn link(modules: &[Module]) -> Result<LinkedOutput, Vec<LinkError>> {
     let mut errors = Vec::new();
 
     // Find the app module (contains main).
-    let main_index = modules
-        .iter()
-        .position(|m| m.items.iter().any(|item| matches!(item, Item::Proc(p) if p.name == "main")));
+    let main_index = modules.iter().position(|m| {
+        m.items
+            .iter()
+            .any(|item| matches!(item, Item::Proc(p) if p.name == "main"))
+    });
 
     let Some(main_index) = main_index else {
         errors.push(LinkError {
@@ -408,8 +411,18 @@ mod tests {
         );
 
         let linked = link(&[mod_a]).unwrap();
-        assert!(linked.comments.iter().any(|c| c.contains("Module A header")));
-        assert!(linked.comments.iter().any(|c| c.contains("--- module: a ---")));
+        assert!(
+            linked
+                .comments
+                .iter()
+                .any(|c| c.contains("Module A header"))
+        );
+        assert!(
+            linked
+                .comments
+                .iter()
+                .any(|c| c.contains("--- module: a ---"))
+        );
     }
 
     #[test]
@@ -429,7 +442,11 @@ mod tests {
         );
 
         let err = link(&[lib]).unwrap_err();
-        assert!(err[0].message.contains("no module contains a 'main' procedure"));
+        assert!(
+            err[0]
+                .message
+                .contains("no module contains a 'main' procedure")
+        );
     }
 
     #[test]
@@ -471,26 +488,36 @@ mod tests {
 
         // Output should parse back cleanly.
         let reparsed = parse(&output, "linked.spc").unwrap();
-        assert!(reparsed
-            .items
-            .iter()
-            .any(|i| matches!(i, Item::Proc(p) if p.name == "_p24p_write_int")));
-        assert!(reparsed
-            .items
-            .iter()
-            .any(|i| matches!(i, Item::Proc(p) if p.name == "main")));
-        assert!(reparsed
-            .items
-            .iter()
-            .any(|i| matches!(i, Item::Global(g) if g.name == "count")));
-        assert!(reparsed
-            .items
-            .iter()
-            .any(|i| matches!(i, Item::Data(d) if d.name == "msg")));
-        assert!(reparsed
-            .items
-            .iter()
-            .any(|i| matches!(i, Item::Const(c) if c.name == "MAX")));
+        assert!(
+            reparsed
+                .items
+                .iter()
+                .any(|i| matches!(i, Item::Proc(p) if p.name == "_p24p_write_int"))
+        );
+        assert!(
+            reparsed
+                .items
+                .iter()
+                .any(|i| matches!(i, Item::Proc(p) if p.name == "main"))
+        );
+        assert!(
+            reparsed
+                .items
+                .iter()
+                .any(|i| matches!(i, Item::Global(g) if g.name == "count"))
+        );
+        assert!(
+            reparsed
+                .items
+                .iter()
+                .any(|i| matches!(i, Item::Data(d) if d.name == "msg"))
+        );
+        assert!(
+            reparsed
+                .items
+                .iter()
+                .any(|i| matches!(i, Item::Const(c) if c.name == "MAX"))
+        );
     }
 
     #[test]

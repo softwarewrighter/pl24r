@@ -39,7 +39,11 @@ fn test_link_runtime_and_app_to_stdout() {
         .arg(fixture("app.spc"))
         .output()
         .unwrap();
-    assert!(out.status.success(), "stderr: {}", String::from_utf8_lossy(&out.stderr));
+    assert!(
+        out.status.success(),
+        "stderr: {}",
+        String::from_utf8_lossy(&out.stderr)
+    );
 
     let stdout = String::from_utf8_lossy(&out.stdout);
     // Runtime procs should come before main.
@@ -67,7 +71,11 @@ fn test_link_to_output_file() {
         .arg(outpath.to_str().unwrap())
         .output()
         .unwrap();
-    assert!(out.status.success(), "stderr: {}", String::from_utf8_lossy(&out.stderr));
+    assert!(
+        out.status.success(),
+        "stderr: {}",
+        String::from_utf8_lossy(&out.stderr)
+    );
 
     let content = std::fs::read_to_string(&outpath).unwrap();
     assert!(content.contains(".proc main"));
@@ -110,11 +118,12 @@ fn test_verbose_short_flag() {
 
 #[test]
 fn test_legacy_app_without_metadata() {
-    let out = pl24r()
-        .arg(fixture("legacy_app.spc"))
-        .output()
-        .unwrap();
-    assert!(out.status.success(), "stderr: {}", String::from_utf8_lossy(&out.stderr));
+    let out = pl24r().arg(fixture("legacy_app.spc")).output().unwrap();
+    assert!(
+        out.status.success(),
+        "stderr: {}",
+        String::from_utf8_lossy(&out.stderr)
+    );
 
     let stdout = String::from_utf8_lossy(&out.stdout);
     assert!(stdout.contains(".proc main"));
@@ -132,11 +141,7 @@ fn test_unknown_option() {
 
 #[test]
 fn test_missing_o_argument() {
-    let out = pl24r()
-        .arg(fixture("app.spc"))
-        .arg("-o")
-        .output()
-        .unwrap();
+    let out = pl24r().arg(fixture("app.spc")).arg("-o").output().unwrap();
     assert!(!out.status.success());
     let stderr = String::from_utf8_lossy(&out.stderr);
     assert!(stderr.contains("-o requires"));
@@ -144,10 +149,7 @@ fn test_missing_o_argument() {
 
 #[test]
 fn test_no_main_error() {
-    let out = pl24r()
-        .arg(fixture("runtime.spc"))
-        .output()
-        .unwrap();
+    let out = pl24r().arg(fixture("runtime.spc")).output().unwrap();
     assert!(!out.status.success());
     let stderr = String::from_utf8_lossy(&out.stderr);
     assert!(stderr.contains("main"));

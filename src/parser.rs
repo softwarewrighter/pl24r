@@ -1,7 +1,8 @@
-//! .spc file parser for the pl24r linker.
+//! .spc file parser for the pl24r COR24 p-code linker.
 //!
 //! Parses symbolic p-code assembler text files into a structured AST,
-//! including the new module metadata directives for linking.
+//! including module metadata directives for linking. Language-agnostic:
+//! handles .spc files from any compiler targeting the COR24 p-code VM.
 
 /// A parsed .spc module.
 #[derive(Debug, Clone, PartialEq)]
@@ -282,7 +283,8 @@ impl<'a> Parser<'a> {
 
             // Label: ends with ':'
             if let Some(label) = bline.strip_suffix(':')
-                && !label.contains(' ') && !label.contains('\t')
+                && !label.contains(' ')
+                && !label.contains('\t')
             {
                 body.push(Statement::Label(label.to_string()));
                 self.pos += 1;
@@ -311,7 +313,10 @@ impl<'a> Parser<'a> {
 
         let parts: Vec<&str> = code.splitn(2, char::is_whitespace).collect();
         let mnemonic = parts[0].to_string();
-        let operand = parts.get(1).map(|s| s.trim().to_string()).filter(|s| !s.is_empty());
+        let operand = parts
+            .get(1)
+            .map(|s| s.trim().to_string())
+            .filter(|s| !s.is_empty());
 
         Ok(Instruction {
             mnemonic,
@@ -518,8 +523,16 @@ done:
                 assert_eq!(p.name, "puts");
                 assert_eq!(p.nlocals, 1);
                 // Check that labels are parsed
-                assert!(p.body.iter().any(|s| *s == Statement::Label("loop".to_string())));
-                assert!(p.body.iter().any(|s| *s == Statement::Label("done".to_string())));
+                assert!(
+                    p.body
+                        .iter()
+                        .any(|s| *s == Statement::Label("loop".to_string()))
+                );
+                assert!(
+                    p.body
+                        .iter()
+                        .any(|s| *s == Statement::Label("done".to_string()))
+                );
             }
             _ => panic!("expected Proc"),
         }
@@ -535,16 +548,14 @@ done:
 ";
         let m = parse(src, "test.spc").unwrap();
         match &m.items[0] {
-            Item::Proc(p) => {
-                match &p.body[0] {
-                    Statement::Instruction(i) => {
-                        assert_eq!(i.mnemonic, "push");
-                        assert_eq!(i.operand.as_deref(), Some("45"));
-                        assert!(i.comment.as_ref().unwrap().contains("'-'"));
-                    }
-                    _ => panic!("expected instruction"),
+            Item::Proc(p) => match &p.body[0] {
+                Statement::Instruction(i) => {
+                    assert_eq!(i.mnemonic, "push");
+                    assert_eq!(i.operand.as_deref(), Some("45"));
+                    assert!(i.comment.as_ref().unwrap().contains("'-'"));
                 }
-            }
+                _ => panic!("expected instruction"),
+            },
             _ => panic!("expected Proc"),
         }
     }

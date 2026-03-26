@@ -140,7 +140,9 @@ pub fn build_symbol_table(modules: &[Module]) -> Result<SymbolTable, Vec<SymbolE
     let main_modules: Vec<&str> = modules
         .iter()
         .filter(|m| {
-            m.items.iter().any(|item| matches!(item, Item::Proc(p) if p.name == "main"))
+            m.items
+                .iter()
+                .any(|item| matches!(item, Item::Proc(p) if p.name == "main"))
         })
         .map(|m| m.name.as_str())
         .collect();
@@ -293,7 +295,10 @@ mod tests {
         .unwrap();
 
         let err = build_symbol_table(&[app]).unwrap_err();
-        assert!(err.iter().any(|e| e.message.contains("unresolved extern 'nonexistent'")));
+        assert!(
+            err.iter()
+                .any(|e| e.message.contains("unresolved extern 'nonexistent'"))
+        );
     }
 
     #[test]
@@ -314,7 +319,10 @@ mod tests {
         .unwrap();
 
         let err = build_symbol_table(&[lib]).unwrap_err();
-        assert!(err.iter().any(|e| e.message.contains("no 'main' procedure")));
+        assert!(
+            err.iter()
+                .any(|e| e.message.contains("no 'main' procedure"))
+        );
     }
 
     #[test]
@@ -351,8 +359,14 @@ mod tests {
 
         let err = build_symbol_table(&[mod_a, mod_b]).unwrap_err();
         // Should report both duplicate and multiple main
-        assert!(err.iter().any(|e| e.message.contains("duplicate symbol 'main'")));
-        assert!(err.iter().any(|e| e.message.contains("multiple 'main' procedures")));
+        assert!(
+            err.iter()
+                .any(|e| e.message.contains("duplicate symbol 'main'"))
+        );
+        assert!(
+            err.iter()
+                .any(|e| e.message.contains("multiple 'main' procedures"))
+        );
     }
 
     #[test]

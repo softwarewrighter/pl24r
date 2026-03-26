@@ -1,0 +1,1 @@
+Implemented src/linker.rs with link() and emit() functions. link() reorders modules (non-main first, main-containing last), merges globals (dedup), data, consts (conflict-checked), and procs. emit() produces clean .spc text stripping all linker metadata. 13 tests cover ordering, merging, conflicts, roundtrip parsing, and 3-module integration. All 41 tests pass, clippy clean.

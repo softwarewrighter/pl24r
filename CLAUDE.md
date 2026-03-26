@@ -42,18 +42,25 @@ The next session depends on accurate trajectory recording.
 
 Do NOT skip any of these steps.
 
-## Project: pl24r — Pascal P-Code Linker in Rust
+## Project: pl24r — P-Code Linker for COR24 in Rust
 
-A Rust CLI tool that combines multiple `.spc` (symbolic p-code assembler) text files into one merged `.spc` file. This is a Phase 1 offline text-level linker for the Pascal-on-COR24 toolchain.
+A Rust CLI tool that combines multiple `.spc` (symbolic p-code assembler) text files into one merged `.spc` file. This is a language-agnostic offline text-level linker for the COR24 p-code VM. It operates on .spc files regardless of which HLL compiler produced them — Pascal (p24p) is the first frontend, but the linker and its module metadata are designed to support any language targeting COR24 (e.g., a future Basic compiler).
 
-**Pipeline:**
+**Pipeline (example with Pascal):**
 ```
 Pascal source(s) → p24p compiler → .spc file(s)  ─┐
 Hand-written runtime .spc (phase0)                 ├→ pl24r → combined .spc → pasm → .p24 → emulator
 Pascal-compiled runtime .spc (phase1+)             ┘
 ```
 
-**Module metadata format** (new .spc directives for linking):
+**Pipeline (general):**
+```
+HLL source(s) → compiler → .spc file(s)  ─┐
+Runtime .spc                               ├→ pl24r → combined .spc → pasm → .p24 → COR24 VM
+Library .spc modules                       ┘
+```
+
+**Module metadata format** (language-agnostic .spc directives for linking):
 - `.module Name` — declare module identity
 - `.export sym` — mark symbol as visible to other modules
 - `.extern sym` — declare external symbol dependency
@@ -87,6 +94,29 @@ cargo build
 cargo test
 cargo clippy -- -D warnings
 ```
+
+## Full Pipeline
+
+The complete build flow from .spc source to running program:
+
+```bash
+# 1. Link: combine runtime + app modules into one .spc
+pl24r runtime.spc app.spc -o combined.spc
+
+# 2. Assemble: convert .spc text to .p24 binary (requires pasm from pv24a)
+pasm combined.spc -o combined.p24
+
+# 3. Run: execute on the COR24 VM (requires pv24a emulator)
+pv24a combined.p24
+```
+
+A convenience script is provided at `scripts/pipeline.sh` that runs all three steps, skipping unavailable tools gracefully:
+
+```bash
+./scripts/pipeline.sh ~/github/softwarewrighter/pr24p/src/runtime.spc app.spc
+```
+
+Environment variables `PL24R`, `PASM`, and `PV24A` can override tool paths.
 
 ## Conventions
 

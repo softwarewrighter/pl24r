@@ -1,25 +1,25 @@
-# pl24r — Pascal P-Code Linker in Rust
+# pl24r — P-Code Linker for COR24 in Rust
 
 ## Goal
 
-Build a Rust CLI tool that combines multiple `.spc` (symbolic p-code assembler) text files into one merged `.spc` file for pasm assembly. This is a Phase 1 offline text-level linker for the Pascal-on-COR24 toolchain.
+Build a Rust CLI tool that combines multiple `.spc` (symbolic p-code assembler) text files into one merged `.spc` file for pasm assembly. This is a language-agnostic offline text-level linker for the COR24 p-code VM — it works with .spc files from any compiler frontend (Pascal via p24p is the first, but the design supports future languages like Basic).
 
-## Pipeline
+## Pipeline (general)
 
 ```
-Pascal source(s) → p24p compiler → .spc file(s)  ─┐
-Hand-written runtime .spc (phase0)                 ├→ pl24r linker → combined .spc → pasm → .p24 → emulator
-Pascal-compiled runtime .spc (phase1+)             ┘
+HLL source(s) → compiler → .spc file(s)  ─┐
+Runtime .spc                               ├→ pl24r linker → combined .spc → pasm → .p24 → COR24 VM
+Library .spc modules                       ┘
 ```
 
 ## Input categories
 
-1. **App** — the main program module (compiled from Pascal by p24p)
-2. **User library** (optional) — separately compiled Pascal library
+1. **App** — the main program module (compiled from any HLL compiler targeting COR24)
+2. **User library** (optional) — separately compiled library module
 3. **Phase 0 runtime** — hand-written .spc (write_int, write_ln, write_bool)
-4. **Phase 1+ runtime** — Pascal-compiled runtime routines
+4. **Phase 1+ runtime** — HLL-compiled runtime routines
 
-## Module metadata format (co-designed with pv24a/p24p)
+## Module metadata format (co-designed with pv24a, language-agnostic)
 
 New `.spc` directives for linking:
 

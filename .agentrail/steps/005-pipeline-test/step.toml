@@ -1,6 +1,6 @@
 number = 5
 slug = "pipeline-test"
-status = "pending"
+status = "in-progress"
 description = "End-to-end integration test with the real Pascal toolchain. (1) Copy or refer..."
 role = "production"
 context_files = []

@@ -75,10 +75,8 @@ fn run() -> Result<(), String> {
     // Parse all input files.
     let mut modules = Vec::new();
     for path in &args.inputs {
-        let source = fs::read_to_string(path)
-            .map_err(|e| format!("{path}: {e}"))?;
-        let module = parser::parse(&source, path)
-            .map_err(|e| format!("{path}: {e}"))?;
+        let source = fs::read_to_string(path).map_err(|e| format!("{path}: {e}"))?;
+        let module = parser::parse(&source, path).map_err(|e| format!("{path}: {e}"))?;
         if args.verbose {
             eprintln!(
                 "[pl24r] parsed '{}': module='{}', {} items, {} exports, {} externs, metadata={}",
@@ -94,14 +92,16 @@ fn run() -> Result<(), String> {
     }
 
     // Build symbol table and validate.
-    let symbol_table = symbols::build_symbol_table(&modules)
-        .map_err(|errors| {
-            let msgs: Vec<String> = errors.iter().map(|e| format!("error: {e}")).collect();
-            msgs.join("\n")
-        })?;
+    let symbol_table = symbols::build_symbol_table(&modules).map_err(|errors| {
+        let msgs: Vec<String> = errors.iter().map(|e| format!("error: {e}")).collect();
+        msgs.join("\n")
+    })?;
 
     if args.verbose {
-        eprintln!("[pl24r] symbol table: {} exports", symbol_table.exports.len());
+        eprintln!(
+            "[pl24r] symbol table: {} exports",
+            symbol_table.exports.len()
+        );
         let mut export_names: Vec<&String> = symbol_table.exports.keys().collect();
         export_names.sort();
         for name in &export_names {
@@ -115,11 +115,10 @@ fn run() -> Result<(), String> {
     }
 
     // Link modules.
-    let linked = linker::link(&modules)
-        .map_err(|errors| {
-            let msgs: Vec<String> = errors.iter().map(|e| format!("error: {e}")).collect();
-            msgs.join("\n")
-        })?;
+    let linked = linker::link(&modules).map_err(|errors| {
+        let msgs: Vec<String> = errors.iter().map(|e| format!("error: {e}")).collect();
+        msgs.join("\n")
+    })?;
 
     if args.verbose {
         eprintln!(
@@ -136,8 +135,7 @@ fn run() -> Result<(), String> {
 
     match args.output {
         Some(ref path) => {
-            fs::write(path, &output_text)
-                .map_err(|e| format!("{path}: {e}"))?;
+            fs::write(path, &output_text).map_err(|e| format!("{path}: {e}"))?;
             if args.verbose {
                 eprintln!("[pl24r] wrote {path}");
             }
