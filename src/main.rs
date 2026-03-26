@@ -1,3 +1,3 @@
 fn main() {
-    println!("Hello, world!");
+    println!("pl24r: Pascal p-code linker");
 }
