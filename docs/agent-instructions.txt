@@ -1,0 +1,10 @@
+run agentrail --help
+and look at how agenrail is used in these related projects
+~/github/softwarewrighter/web-dv24r
+~/github/sw-vibe-coding/pv24a
+especially their CLAUDE.md files.
+Then read this project's docs/research.txt to create the agentrail saga.
+This project builds on top of ../p24p (a.k.a. ../p24c) a Pascal compiler in cor24 C
+This project also builds on top of the Pascal runtime in Pascal (dogfooding).  see ../pr24p/docs/runtime.md
+This project implements the Pascal linker in Rust (like the C cross-compiler in ~/github/sw-vibe-coding/tc24r
+After you research everything above, let me know if you have questions before you create the saga.

@@ -1,0 +1,8 @@
+number = 1
+slug = "spc-parser"
+status = "pending"
+description = "Create the pl24r Rust linker project scaffold with edition 2024. Set up src/m..."
+role = "production"
+context_files = []
+created_at = "2026-03-26T01:13:30"
+task_type = "rust-project-init"
