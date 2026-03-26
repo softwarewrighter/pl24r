@@ -79,9 +79,24 @@ Library .spc modules                       ┘
 
 `rust-project-init`, `rust-clippy-fix`, `rust-test-write`, `pre-commit`
 
+## Agent Wiki (Cross-Component Coordination)
+
+This project participates in a shared wiki for coordinating with other toolchain agents.
+See `docs/agent-cas-wiki.md` for the full API reference and CAS protocol.
+
+Key wiki pages:
+- **AgentStatus** — sign-in board, current status of all agents
+- **AgentToAgentRequests** — cross-component dependency requests (REQ-001 through REQ-005)
+- **PL24R** — this project's wiki page (design decisions, metadata protocol, examples)
+- **P24Toolchain** — canonical toolchain coordination page (maintained by web-dv24r)
+
 ## Key Documentation (READ BEFORE WORKING)
 
+- `docs/agent-cas-wiki.md` — Wiki API for agent coordination (read/write pages with CAS)
 - `docs/research.txt` — Linker design research (module formats, linking strategies, architecture decisions)
+- `docs/feature-request-p24p.md` — Request for p24p to emit module metadata
+- `docs/feature-request-pr24p.md` — Request for pr24p to add metadata to runtime.spc
+- `docs/feature-request-pv24a.md` — Request for pasm to document metadata directives
 - `.agentrail/plan.md` — Saga plan with step breakdown
 - `~/github/softwarewrighter/pr24p/docs/runtime.md` — Runtime library structure and phases
 - `~/github/sw-vibe-coding/pv24a/hello.spc` — Example .spc file
