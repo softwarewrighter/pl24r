@@ -46,10 +46,10 @@ fn test_link_runtime_and_app_to_stdout() {
     );
 
     let stdout = String::from_utf8_lossy(&out.stdout);
-    // Runtime procs should come before main.
+    // Main proc should come first (VM starts execution at code offset 0).
     let write_int_pos = stdout.find(".proc _p24p_write_int").unwrap();
     let main_pos = stdout.find(".proc main").unwrap();
-    assert!(write_int_pos < main_pos);
+    assert!(main_pos < write_int_pos);
 
     // No module metadata in output.
     assert!(!stdout.contains(".module"));

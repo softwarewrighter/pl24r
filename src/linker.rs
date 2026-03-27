@@ -57,14 +57,15 @@ pub fn link(modules: &[Module]) -> Result<LinkedOutput, Vec<LinkError>> {
         return Err(errors);
     };
 
-    // Order: all non-main modules in input order, then main module last.
+    // Order: main module first (VM starts execution at code offset 0),
+    // then remaining modules in input order.
     let mut ordered: Vec<&Module> = Vec::with_capacity(modules.len());
+    ordered.push(&modules[main_index]);
     for (i, m) in modules.iter().enumerate() {
         if i != main_index {
             ordered.push(m);
         }
     }
-    ordered.push(&modules[main_index]);
 
     let mut comments = Vec::new();
     let mut globals = Vec::new();
@@ -205,7 +206,7 @@ mod tests {
     }
 
     #[test]
-    fn test_link_ordering_main_last() {
+    fn test_link_ordering_main_first() {
         let app = parse_ok(
             "\
 .module app
@@ -239,11 +240,11 @@ mod tests {
             "runtime.spc",
         );
 
-        // App first in input, but should end up last in output.
+        // App first in input — main should stay first (VM starts at offset 0).
         let linked = link(&[app, runtime]).unwrap();
         assert_eq!(linked.procs.len(), 2);
-        assert_eq!(linked.procs[0].name, "_p24p_write_int");
-        assert_eq!(linked.procs[1].name, "main");
+        assert_eq!(linked.procs[0].name, "main");
+        assert_eq!(linked.procs[1].name, "_p24p_write_int");
     }
 
     #[test]
@@ -283,10 +284,10 @@ mod tests {
 
         let linked = link(&[mod_a, mod_b]).unwrap();
         assert_eq!(linked.globals.len(), 3);
-        // lib globals come first (lib is non-main module).
-        assert_eq!(linked.globals[0].name, "z");
-        assert_eq!(linked.globals[1].name, "x");
-        assert_eq!(linked.globals[2].name, "y");
+        // Main module globals come first (main module is first in output).
+        assert_eq!(linked.globals[0].name, "x");
+        assert_eq!(linked.globals[1].name, "y");
+        assert_eq!(linked.globals[2].name, "z");
     }
 
     #[test]
@@ -698,16 +699,17 @@ done:
         let linked = link(&[app, runtime, mathlib]).unwrap();
         let output = emit(&linked);
 
-        // Verify ordering: runtime and mathlib procs before main.
+        // Verify ordering: main proc first (VM starts at offset 0),
+        // runtime and mathlib procs after.
         let main_pos = output.find(".proc main").unwrap();
         let write_int_pos = output.find(".proc _p24p_write_int").unwrap();
         let square_pos = output.find(".proc square").unwrap();
-        assert!(write_int_pos < main_pos);
-        assert!(square_pos < main_pos);
+        assert!(main_pos < write_int_pos);
+        assert!(main_pos < square_pos);
 
         // Verify globals are at top (before procs).
         let global_pos = output.find(".global result").unwrap();
-        assert!(global_pos < write_int_pos);
+        assert!(global_pos < main_pos);
 
         // Should reparse.
         let reparsed = parse(&output, "linked.spc").unwrap();

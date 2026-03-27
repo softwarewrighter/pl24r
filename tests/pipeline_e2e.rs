@@ -39,14 +39,14 @@ fn test_e2e_runtime_app_link() {
     // App main present.
     assert!(stdout.contains(".proc main 0"));
 
-    // Runtime procs come before main (correct link order).
+    // Main proc comes first (VM starts execution at code offset 0).
     let write_int_pos = stdout.find(".proc _p24p_write_int").unwrap();
     let write_bool_pos = stdout.find(".proc _p24p_write_bool").unwrap();
     let write_ln_pos = stdout.find(".proc _p24p_write_ln").unwrap();
     let main_pos = stdout.find(".proc main").unwrap();
-    assert!(write_int_pos < main_pos);
-    assert!(write_bool_pos < main_pos);
-    assert!(write_ln_pos < main_pos);
+    assert!(main_pos < write_int_pos);
+    assert!(main_pos < write_bool_pos);
+    assert!(main_pos < write_ln_pos);
 
     // Module metadata is stripped.
     assert!(!stdout.contains(".module"));
@@ -163,7 +163,7 @@ fn test_e2e_file_output_matches_stdout() {
 }
 
 /// Verify that linking with reversed input order still produces correct output.
-/// The linker should always put the main module last regardless of input order.
+/// The linker should always put the main module first regardless of input order.
 #[test]
 fn test_e2e_input_order_independent() {
     // runtime first
@@ -185,14 +185,14 @@ fn test_e2e_input_order_independent() {
     let stdout1 = String::from_utf8_lossy(&out1.stdout);
     let stdout2 = String::from_utf8_lossy(&out2.stdout);
 
-    // Both should have main last.
-    let main_pos1 = stdout1.rfind(".proc main").unwrap();
-    let last_proc1 = stdout1.rfind(".proc ").unwrap();
-    assert_eq!(main_pos1, last_proc1);
+    // Both should have main first (VM starts at code offset 0).
+    let main_pos1 = stdout1.find(".proc main").unwrap();
+    let first_proc1 = stdout1.find(".proc ").unwrap();
+    assert_eq!(main_pos1, first_proc1);
 
-    let main_pos2 = stdout2.rfind(".proc main").unwrap();
-    let last_proc2 = stdout2.rfind(".proc ").unwrap();
-    assert_eq!(main_pos2, last_proc2);
+    let main_pos2 = stdout2.find(".proc main").unwrap();
+    let first_proc2 = stdout2.find(".proc ").unwrap();
+    assert_eq!(main_pos2, first_proc2);
 }
 
 /// Verify linking runtime alone (without main) produces a clear error.
